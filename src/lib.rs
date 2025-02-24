@@ -33,7 +33,7 @@ impl LlmSdk {
     pub fn new(key: String) -> Self {
         Self {
             key,
-            base_url: "http://ark.cn-beijing.volces.com/api/v3".to_string(),
+            base_url: "https://qianfan.baidubce.com/v2".to_string(),
         }
     }
 

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Clone, Debug, Builder)]
 pub struct ChatCompletionRequest {
-    /// 您创建的推理接入点 ID, ep-202406040*****-*****
+    /// 您创建的推理接入点 ID, 	deepseek-r1-distill-llama-8b
     model: String,
     /// 由目前为止的对话组成的消息列表,当指定了 tools 参数以使用模型的 function call 能力时，
     /// 请确保 messages 列表内的消息满足如下要求：
