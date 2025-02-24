@@ -2,6 +2,7 @@
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use tracing::info;
 /// https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Fm2vrveyu
 
 #[derive(Serialize, Clone, Debug, Builder)]
@@ -205,7 +206,7 @@ pub struct Message {
     /// 固定为 assistant
     pub role: String,
     /// message名
-    pub name: String,
+    pub name: Option<String>,
     /// 模型生成的消息内容，content 与 tool_calls 字段二者至少有一个为非空
     pub content: String,
     /// 模型生成的消息内容，content 与 tool_calls 字段二者至少有一个为非空
@@ -346,9 +347,9 @@ pub struct ChoiceDeltaToolCall {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::SDK;
     use anyhow::Result;
     use crate::MessageEvent;
+    use crate::LlmSdk;
     #[test]
     fn chat_completion_request_serialize_should_work() {
         let request = ChatCompletionRequestBuilder::default()
@@ -375,7 +376,7 @@ mod tests {
     #[tokio::test]
     async fn simple_chat_completion_should_work() -> Result<()> {
         let req = ChatCompletionRequestBuilder::default()
-            .model("ep-20240929173453-xsp5x".to_string())
+            .model("deepseek-r1-distill-llama-8b".to_string())
             .messages(vec![
                 ChatCompletionMessage::System(SystemMessage {
                     content: "你好".to_string(),
@@ -386,12 +387,13 @@ mod tests {
             ])
             .build()
             .unwrap();
-        let res = SDK.chat_completion(&req).await?;
+        let sdk: LlmSdk = LlmSdk::new(std::env::var("BAIDU_API_KEY").unwrap());
+        let res = sdk.chat_completion(&req).await?;
         //assert_eq!(res.model, ChatCompleteModel::Gpt3Turbo);
         assert_eq!(res.object, "chat.completion");
         //assert_eq!(res.choices.len(), 0);
         let choice = &res.choices[0];
-        assert_eq!(choice.message.content.clone().unwrap(), "hello");
+        assert_eq!(choice.message.content.clone(), "hello");
 
         //assert_eq!(choice.delta, "hello");
         //assert_eq!(choice.message.tool_calls.len(), 0);
@@ -401,7 +403,7 @@ mod tests {
     #[tokio::test]
     async fn simple_chat_sequence_completion_should_work() -> Result<()> {
         let req = ChatCompletionRequestBuilder::default()
-            .model("ep-20240817170913-w9q57".to_string())
+            .model("deepseek-r1-distill-llama-8b".to_string())
             .messages(vec![
                 ChatCompletionMessage::System(SystemMessage {
                     content: "你是我的私人助理，可以帮我记一些东西".to_string(),
@@ -412,7 +414,8 @@ mod tests {
             ])
             .build()
             .unwrap();
-        let res = SDK.chat_completion(&req).await?;
+        let sdk: LlmSdk = LlmSdk::new(std::env::var("BAIDU_API_KEY").unwrap());
+        let res = sdk.chat_completion(&req).await?;
         //assert_eq!(res.model, ChatCompleteModel::Gpt3Turbo);
         assert_eq!(res.object, "chat.completion");
         //assert_eq!(res.choices.len(), 0);
@@ -420,7 +423,7 @@ mod tests {
 
 
         let req = ChatCompletionRequestBuilder::default()
-        .model("ep-20240817170913-w9q57".to_string())
+        .model("deepseek-r1-distill-llama-8b".to_string())
         .messages(vec![
             ChatCompletionMessage::User(UserMessage {
                 content: "记住我是你的主人，我叫孙庆鹏".to_string(),
@@ -431,9 +434,9 @@ mod tests {
         ])
         .build()
         .unwrap();
-        let res = SDK.chat_completion(&req).await?;
+        let res = sdk.chat_completion(&req).await?;
         let choice = &res.choices[0];
-        assert_eq!(choice.message.content.clone().unwrap(), "hello");
+        assert_eq!(choice.message.content.clone(), "hello");
         //assert_eq!(choice.delta, "hello");
         //assert_eq!(choice.message.tool_calls.len(), 0);
         Ok(())
@@ -442,7 +445,7 @@ mod tests {
     #[tokio::test]
     async fn simple_chat_completion_chunk_should_work() -> Result<()> {
         let req = ChatCompletionRequestBuilder::default()
-            .model("ep-20240817170913-w9q57".to_string())
+            .model("deepseek-r1-distill-llama-8b".to_string())
             .messages(vec![
                 ChatCompletionMessage::System(SystemMessage {
                     content: "你好".to_string(),
@@ -464,7 +467,8 @@ mod tests {
                 info!("end");
             }
         }
-        let result = SDK.chat_completion_stream(&req, &MyMessageEvent {}).await;
+        let sdk: LlmSdk = LlmSdk::new(std::env::var("BAIDU_API_KEY").unwrap());
+        let result = sdk.chat_completion_stream(&req, &MyMessageEvent {}).await;
         match result {
             Ok(()) => (),
             Err(error) => {

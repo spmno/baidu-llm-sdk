@@ -211,7 +211,7 @@ pub struct Usage {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::SDK;
+    use crate::LlmSdk;
     use anyhow::Result;
     use tracing::info;
     #[test]
@@ -265,7 +265,8 @@ mod tests {
         .build()
         .unwrap();
         info!("req_json:{:?}", serde_json::to_string(&req).unwrap());
-        let res = SDK.vision_lite(&req).await?;
+        let sdk: LlmSdk = LlmSdk::new(std::env::var("BAIDU_API_KEY").unwrap());
+        let res = sdk.vision_lite(&req).await?;
         //assert_eq!(res.model, ChatCompleteModel::Gpt3Turbo);
         assert_eq!(res.object, "chat.completion");
         //assert_eq!(res.choices.len(), 0);

@@ -175,7 +175,7 @@ impl SendAndLog for RequestBuilder {
 #[cfg(test)]
 mod tests {
     use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
-    
+    use crate::LlmSdk;
     #[ctor::ctor]
     fn init() {
         tracing_subscriber::registry().with(fmt::layer()).init();

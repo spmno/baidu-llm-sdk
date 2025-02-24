@@ -59,8 +59,8 @@ pub struct Usage {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::SDK;
     use tracing::info;
+    use crate::LlmSdk;
     use std::collections::HashMap;
     #[tokio::test]
     async fn embddings_request_serialize_should_work() {
@@ -72,7 +72,8 @@ mod tests {
 
         let json = serde_json::to_string(&request).unwrap();
         info!("json: {}", json);
-        let resp = SDK.embeddings(&request).await.unwrap();
+        let sdk: LlmSdk = LlmSdk::new(std::env::var("BAIDU_API_KEY").unwrap());
+        let resp = sdk.embeddings(&request).await.unwrap();
 
         assert_eq!(resp.data[0].object, "embedding");
         assert_eq!(resp.data[0].index, 1);
